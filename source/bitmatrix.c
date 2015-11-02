@@ -86,8 +86,6 @@ inline void bitmatrix_fprintf(FILE *out_file, bitmatrix_t *mat_ptr)
             fprintf(out_file,"%d%c",bitmatrix_get(mat_ptr,i,j),
                     j < mat_ptr->col_dim - 1? ' ' : '\n');
         }
-
-        fprintf(out_file,"%c",i < mat_ptr->row_dim - 1? '\n' : '\0');
     }
 
     return;

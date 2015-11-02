@@ -42,8 +42,7 @@ extern bitmatrix_t *bitmatrix_malloc(uint64_t m, uint64_t n);
 
 extern void bitmatrix_free(bitmatrix_t *src);
 
-/* bitmatrix_printf : For printing bit matrices.                 */
-void bitmatrix_fprintf(FILE *dest, bitmatrix_t *mat_ptr);
+extern void bitmatrix_fprintf(FILE *dest, bitmatrix_t *mat_ptr);
 
 extern bool bitmatrix_get(bitmatrix_t *dest, uint64_t i, uint64_t j);
 
