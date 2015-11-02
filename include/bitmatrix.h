@@ -8,6 +8,7 @@
 #define __BITMATRIX_H__
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -22,7 +23,8 @@ typedef struct
     uint64_t *col_pos;
     uint64_t row_dim;
     uint64_t col_dim;
-      word_t **mat;
+    uint64_t pop_cnt;
+        word_t **mat;
 } bitmatrix_t;
 
 #ifndef __ROT_DIR_T__
@@ -40,9 +42,18 @@ extern bitmatrix_t *bitmatrix_malloc(uint64_t m, uint64_t n);
 
 extern void bitmatrix_free(bitmatrix_t *src);
 
-extern void bitmatrix_set(bitmatrix_t *dest, bool value, uint64_t i, uint64_t j);
+/* bitmatrix_printf : For printing bit matrices.                 */
+void bitmatrix_fprintf(FILE *dest, bitmatrix_t *mat_ptr);
 
 extern bool bitmatrix_get(bitmatrix_t *dest, uint64_t i, uint64_t j);
+
+extern void bitmatrix_set(bitmatrix_t *dest, bool value, uint64_t i, uint64_t j);
+
+extern bool bitmatrix_equal(bitmatrix_t *a, bitmatrix_t *b);
+
+extern uint64_t bitmatrix_get_pop(bitmatrix_t *src);
+
+extern void bitmatrix_set_pop(uint64_t pop_cnt, bitmatrix_t *src);
 
 extern void bitmatrix_not(bitmatrix_t *dest, bitmatrix_t *src);
 
