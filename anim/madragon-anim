@@ -1,0 +1,53 @@
+#!/bin/bash
+# madragon-anim: Script for creating the animation file of matrix data.
+#        author: Linas Kaminskas (s082936@student.dtu.dk)
+#      modified: 23-10-2015
+
+# note : script name.
+script_name=$(basename -s .sh $0)
+
+# note : data file path.
+data_file_path=$1
+
+# note : name of frame.
+frame_name=$(basename -s .dat "${data_file_path}")
+
+# note : output file name.
+output_file=$(basename -s .dat "${data_file_path}")
+
+# note : temporary directory of the generated frames.
+output_path="${output_file}-tmp"
+
+# note : data file does not exist? kill script.
+if ! [ -f ${data_file_path} ]; then
+    echo -e "${script_name}: ${data_file_path} does not exist."
+    exit
+fi
+
+# note : create a temporary directory.
+if ! [ -d ${output_path} ]; then
+    echo -e "${script_name}: creating ${output_path}."
+    mkdir "${output_path}"
+fi
+
+# note : plot data with parameters to the gnuplot script.
+if { [ -f ${data_file_path} ]; } && [ -d ${output_path} ]; then
+    echo -e "${script_name}: executing ${script_name}.plt."
+    gnuplot -e "data_file='${data_file_path}'; frame_name='${frame_name}'; output_dir='${output_path}'" ${script_name}.plt
+fi
+
+# note : use ImageMagick to create a high quality animated GIF.
+if [ -d ${output_path} ]; then
+    if [ -f "${output_file}.gif" ]; then
+        echo -e "${script_name}: deleting old animation."
+        rm "${output_file}.gif"
+    fi
+    echo -e "${script_name}: creating new animation."
+    convert -delay 20 -loop 0 "${output_path}/*.png" "${output_file}.gif"
+fi
+
+# note : remove temporary directory.
+if [ -d ${output_path} ]; then
+    echo -e "${script_name}: removing ${output_path}."
+    rm -rf ${output_path}
+fi
