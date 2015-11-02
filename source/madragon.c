@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 #include "algorithm.h"
-#include "bitvector.h"
 #include "bitmatrix.h"
 
 #ifndef VERBOSE
@@ -18,7 +17,7 @@
 #endif /* VERBOSE */
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif /* DEBUG */
 
 /* minu64t : Fast way of finding a minimum between two uint64_t. */
@@ -26,9 +25,6 @@ uint64_t minu64t(uint64_t a, uint64_t b);
 
 /* minu64t : Fast way of finding a maximum between two uint64_t. */
 uint64_t maxu64t(uint64_t a, uint64_t b);
-
-/* bitmatrix_printf : For printing bit matrices.                 */
-void bitmatrix_printf(bitmatrix_t *mat_ptr);
 
 /* initialise_madragon : Initiliase a Madragon game instance.    */
 uint32_t initialise_madragon(madragon_t *dest, FILE *src);
@@ -41,39 +37,66 @@ int main(int argc, char *argv[])
     #if DEBUG == 1
     auto uint64_t k = 0;
     #endif /* DEBUG == 1 */
+    auto bool decision_ans;
     auto madragon_t inst;
  
     #ifdef VERBOSE
     char *proc_name = argv[0];
     #endif /* VERBOSE */
 
-    if (argc != 2) {
+    if (argc < 2) {
         #ifdef VERBOSE
         printf("%s: %s\n",proc_name,"missing input file as argument");
         #endif /* VERBOSE */
         return EXIT_FAILURE;
     }
-        
-    auto char *file_name = argv[1];
-    auto FILE *data_file = fopen(file_name,"r");
-    
-    if (data_file == NULL) {
+
+    if (argc > 3) {
         #ifdef VERBOSE
-        printf("%s: %s %s %s\n",proc_name,"file",file_name,"could not be opened or does not exist");
+        printf("%s: %s\n",proc_name,"too many arguments");
         #endif /* VERBOSE */
         return EXIT_FAILURE;
+    }
+
+    auto char *data_name = argv[1];
+    auto FILE *data_file = fopen(data_name,"r");
+
+    if (data_file == NULL) {
+        #ifdef VERBOSE
+        printf("%s: %s %s %s\n",proc_name,"file",data_name,"could not be opened or does not exist");
+        #endif /* VERBOSE */
+        return EXIT_FAILURE;
+    }
+    
+    auto char *out_name = NULL;
+    auto FILE *out_file = NULL;
+
+    if (argc == 3) {
+        out_name = argv[2];
+        out_file = fopen(out_name,"w");
+        
+        if (out_file == NULL) {
+            #ifdef VERBOSE
+            printf("%s: %s %s %s\n",proc_name,"file",out_name,"could not be opened or does not exist");
+            #endif /* VERBOSE */
+        }
     }
 
     #if VERBOSE == 1
     printf("%s: %s\n",proc_name,"reading data");
     #endif /* VERBOSE == 1 */ 
-    
-    initialise_madragon(&inst,data_file);
-    
+
+    if (initialise_madragon(&inst,data_file) != 0) {
+        #ifdef VERBOSE
+        printf("%s: %s\n",proc_name,"illegal madragon instance");
+        #endif /* VERBOSE */
+        return EXIT_FAILURE;
+    }
+
     #if VERBOSE == 1
     printf("%s: %s\n",proc_name,"read data");
     #endif /* VERBOSE == 1 */
-    
+
     #if VERBOSE == 1
     printf("%s: rows: %"PRIu64" columns: %"PRIu64" moves: %"PRIu64"\n",proc_name,inst.m,inst.n,inst.k);
     #endif /* VERBOSE == 1 */
@@ -82,19 +105,31 @@ int main(int argc, char *argv[])
     printf("%s: %s\n",proc_name,"closing file");
     #endif /* VERBOSE == 1 */
     fclose(data_file);
-    
+
     #if DEBUG == 1
     printf("\n");
     for (k = 0; k < MADRAGON_INST_COUNT; ++k) {
-        bitmatrix_printf(inst.a[k]);
+        bitmatrix_fprintf(stdout,inst.a[k]);
+        printf("\n");
         printf("\n");
     }
     #endif /* DEBUG == 1 */
 
-    auto bool decision_ans;
     decision_ans = algorithm(&inst);
 
-    destroy_madragon(&inst);
+    if (out_file != NULL)
+        operation_reconstruct(out_file,&inst);
+
+    if (destroy_madragon(&inst) != 0) {
+        #ifdef VERBOSE
+        printf("%s: %s\n",proc_name,"could not destroy madragon instance");
+        #endif /* VERBOSE */
+        return EXIT_FAILURE;
+    }
+
+    #ifdef VERBOSE
+    printf("%s: %s %s\n",proc_name,"the instance is",decision_ans? "solvable" : "unsolvable");
+    #endif /* VERBOSE */
 
     return !decision_ans;
 }
@@ -109,21 +144,6 @@ inline uint64_t maxu64t(uint64_t a, uint64_t b)
     return a ^ ((a ^ b) & -(a < b));
 }
 
-inline void bitmatrix_printf(bitmatrix_t *mat_ptr)
-{
-    auto uint64_t i, j;
-
-    for (i = 0; i < mat_ptr->row_dim; ++i) {
-        for (j = 0; j < mat_ptr->col_dim; ++j) {
-            printf("%d",bitmatrix_get(mat_ptr,i,j));
-        }
-
-        printf("\n");
-    }
-
-    return;
-}
-
 uint32_t initialise_madragon(madragon_t *instance, FILE *data_file)
 {
     auto char data;
@@ -133,25 +153,38 @@ uint32_t initialise_madragon(madragon_t *instance, FILE *data_file)
     if (instance == NULL || data_file == NULL)
         return 1;
 
-    /* note : Make some sanity checks to see if the dimensions are proper. */
     status = fscanf(data_file,"%"SCNu64"",&(instance->m));
+    if (status == EOF)
+        return 1;
+    
     status = fscanf(data_file,"%"SCNu64"",&(instance->n));
+    if (status == EOF)
+        return 1;
+    
     status = fscanf(data_file,"%"SCNu64"",&(instance->k));
+    if (status == EOF)
+        return 1;
+
+    if (instance->m == 0 || instance->n == 0 || instance->k == 0)
+        return 1;
 
     status = 0;
     for (k = 0; k < MADRAGON_INST_COUNT; ++k) { 
         instance->a[k] = bitmatrix_malloc(instance->m,instance->n);
         status |= (instance->a[k] == NULL);
     }
+    
+    instance->o = operation_malloc(k);
+    status |= (instance->o == NULL);
 
     if (status)
         return destroy_madragon(instance);
 
     k = 0;
-    while(!feof(data_file)) {
-        fscanf(data_file,"%c",&data);
+    while(status != EOF) {
+        status = fscanf(data_file,"%c",&data);
                 
-        #ifdef DEBUG
+        #if DEBUG == 1
         printf("%c",data);
         #endif /* DEBUG */ 
         if (data == 'b' || data == 'w') {
@@ -173,6 +206,8 @@ uint32_t destroy_madragon(madragon_t *instance)
 
     for (i = 0; i < MADRAGON_INST_COUNT; ++i)
         bitmatrix_free(instance->a[i]);
+
+    operation_free(instance->o);
 
     return 0;
 }

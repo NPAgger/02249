@@ -21,21 +21,6 @@ inline uint64_t maxu64t(uint64_t a, uint64_t b)
     return a ^ ((a ^ b) & -(a < b));
 }
 
-inline void bitmatrix_printf(bitmatrix_t *mat_ptr)
-{
-    auto uint64_t i, j;
-
-    for (i = 0; i < mat_ptr->row_dim; ++i) {
-        for (j = 0; j < mat_ptr->col_dim; ++j) {
-            printf("%d",bitmatrix_get(mat_ptr,i,j));
-        }
-
-        printf("\n");
-    }
-
-    return;
-}
-
 /* todo : Add assertions for each test block.    */
 /* todo : Make the DEBUG macro not being a mess. */
 int main(int argc, char *argv[])
@@ -72,7 +57,7 @@ int main(int argc, char *argv[])
         for (j = 0; j < maxu64t(mat_m,mat_n); ++j)
             bitmatrix_set(m[i],true,j,j);
 
-        bitmatrix_printf(m[i]);
+        bitmatrix_fprintf(stdout,m[i]);
     }
     #endif /* DEBUG == 2 */
 
@@ -85,7 +70,7 @@ int main(int argc, char *argv[])
             printf("%s: %s[%"PRIu64"] %"PRIu64"'th %s %"PRIu64"\n",proc_name,"bitmatrix m",i,j,"row rotated by",row_rot_amnt);
             #endif /* DEBUG */
         }
-        bitmatrix_printf(m[i]);
+        bitmatrix_fprintf(stdout,m[i]);
         #ifdef DEBUG
         for (k = 0; k < m[i]->col_dim; ++k)
             printf("%"PRIu64" ",m[i]->col_pos[k]);
@@ -102,7 +87,7 @@ int main(int argc, char *argv[])
             printf("%s: %s[%"PRIu64"] %"PRIu64"'th %s %"PRIu64"\n",proc_name,"bitmatrix m",i,j,"col rotated by",col_rot_amnt);
             #endif /* DEBUG */
         }
-        bitmatrix_printf(m[i]);
+        bitmatrix_fprintf(stdout,m[i]);
         #ifdef DEBUG
         for (k = 0; k < m[i]->row_dim; ++k)
             printf("%"PRIu64" ",m[i]->row_pos[k]);
@@ -117,7 +102,7 @@ int main(int argc, char *argv[])
         #ifdef DEBUG
         printf("%s: %s[%"PRIu64"]\n",proc_name,"negating bitmatrix m",i);
         #endif /* DEBUG */
-        bitmatrix_printf(m[i]);
+        bitmatrix_fprintf(stdout,m[i]);
     }
     #endif /* DEBUG == 2 */  
 
@@ -128,9 +113,9 @@ int main(int argc, char *argv[])
            proc_name,"bitwise and'ing bitmatrix m",
            (uint64_t) 1,"and m",(uint64_t) 2,"to m",(uint64_t) 3);
     #endif /* DEBUG */
-    bitmatrix_printf(m[0]);
-    bitmatrix_printf(m[1]);
-    bitmatrix_printf(m[2]);
+    bitmatrix_fprintf(stdout,m[0]);
+    bitmatrix_fprintf(stdout,m[1]);
+    bitmatrix_fprintf(stdout,m[2]);
     #endif /* DEBUG == 2 */  
     
     #if DEBUG == 2 
@@ -140,9 +125,9 @@ int main(int argc, char *argv[])
            proc_name,"bitwise or'ing bitmatrix m",
            (uint64_t) 1,"and m",(uint64_t) 2,"to m",(uint64_t) 3);
     #endif /* DEBUG */
-    bitmatrix_printf(m[0]);
-    bitmatrix_printf(m[1]);
-    bitmatrix_printf(m[2]);
+    bitmatrix_fprintf(stdout,m[0]);
+    bitmatrix_fprintf(stdout,m[1]);
+    bitmatrix_fprintf(stdout,m[2]);
     #endif /* DEBUG == 2 */  
     
     #if DEBUG == 2 
@@ -152,9 +137,9 @@ int main(int argc, char *argv[])
            proc_name,"bitwise or'ing bitmatrix m",
            (uint64_t) 1,"and m",(uint64_t) 2,"to m",(uint64_t) 3);
     #endif /* DEBUG */
-    bitmatrix_printf(m[0]);
-    bitmatrix_printf(m[1]);
-    bitmatrix_printf(m[2]);
+    bitmatrix_fprintf(stdout,m[0]);
+    bitmatrix_fprintf(stdout,m[1]);
+    bitmatrix_fprintf(stdout,m[2]);
     #endif /* DEBUG == 2 */  
 
     #if DEBUG == 2 

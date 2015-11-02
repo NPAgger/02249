@@ -38,6 +38,15 @@ typedef struct
     uint64_t k;
 } madragon_t;
 
+/* operation_malloc : Create a structure for holding Madragon operations. */
+extern operation_t *operation_malloc(uint64_t k);
+
+/* operation_free : Destroy a structure for holding Madragon operations. */
+extern void operation_free(operation_t *ops_ptr);
+
+/* operation_free : Reconstruct the Madragon transformation and if needed to file. */
+extern void operation_reconstruct(FILE *dest, madragon_t *instance);
+
 /* madragon_t : Algorithm for solving Madragon instances. */
 extern bool algorithm(madragon_t *instance);
 
